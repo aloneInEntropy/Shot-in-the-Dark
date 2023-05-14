@@ -1,0 +1,46 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://Player/InventorySlotDisplay.tscn" type="PackedScene" id=1]
+[ext_resource path="res://Scripts/InventoryDisplay.gd" type="Script" id=2]
+
+[node name="InventoryDisplay" type="GridContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+custom_constants/vseparation = 0
+custom_constants/hseparation = 4
+columns = 5
+script = ExtResource( 2 )
+
+[node name="InventorySlotDisplay" parent="." instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_right = 60.0
+margin_bottom = 180.0
+
+[node name="InventorySlotDisplay2" parent="." instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 64.0
+margin_right = 124.0
+margin_bottom = 180.0
+
+[node name="InventorySlotDisplay3" parent="." instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 128.0
+margin_right = 188.0
+margin_bottom = 180.0
+
+[node name="InventorySlotDisplay4" parent="." instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 192.0
+margin_right = 252.0
+margin_bottom = 180.0
+
+[node name="InventorySlotDisplay5" parent="." instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 256.0
+margin_right = 316.0
+margin_bottom = 180.0

@@ -1,0 +1,25 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://Scripts/PlayerUI.gd" type="Script" id=1]
+[ext_resource path="res://Scenes/new_theme.tres" type="Theme" id=2]
+
+[node name="PlayerUI" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 1 )
+
+[node name="Label" type="Label" parent="."]
+margin_right = 40.0
+margin_bottom = 14.0
+
+[node name="ProgressBar" type="ProgressBar" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 8.0
+margin_top = 8.0
+margin_right = -256.0
+margin_bottom = -154.0
+theme = ExtResource( 2 )
+value = 50.0
+rounded = true
+percent_visible = false
