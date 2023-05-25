@@ -19,6 +19,12 @@ visible = false
 
 [node name="Welcome" parent="." instance=ExtResource( 4 )]
 
-[node name="Label" type="Label" parent="."]
+[node name="Label1" type="Label" parent="."]
 margin_right = 40.0
 margin_bottom = 14.0
+
+[node name="Label2" type="Label" parent="."]
+margin_left = -1.0
+margin_top = 44.0
+margin_right = 39.0
+margin_bottom = 58.0

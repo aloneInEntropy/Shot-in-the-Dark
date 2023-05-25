@@ -288,6 +288,7 @@ scale = Vector2( 0.1, 0.1 )
 texture = ExtResource( 3 )
 
 [node name="FlashlightArea" type="Area2D" parent="Flashlight"]
+collision_layer = 2
 
 [node name="FlashlightCollider" type="CollisionPolygon2D" parent="Flashlight/FlashlightArea"]
 polygon = PoolVector2Array( 128, -64, 128, 64, 0, 0 )

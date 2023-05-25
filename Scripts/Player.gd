@@ -65,17 +65,18 @@ func _physics_process(delta):
 	else:
 		ast.travel("Idle")
 		velocity = velocity.move_toward(Vector2.ZERO, FRICTION * delta)
-	
-	
+		
+		
 	# fl.look_at(global_transform.origin + velocity) last one was changed for some reason. this is the correct line.
 	fl.look_at(global_transform.origin + velocity) # rotates the flashlight to look at the player's last velocity.
+	fl.rotation_degrees = wrapf(fl.rotation_degrees, 0, 360.0) # wrap rotation between 0 and 360
 
 	# if the flash key (Z) is pressed, toggle the flashlight's visibility
 	if (Input.get_action_strength("ui_flash") == 0) or flashlight_battery_remaining == 0:
 		fl.visible = false
 		fla.monitorable = false
 		flashing = false
-		gui.get_node("Label").text = ""
+		gui.get_node("Label1").text = ""
 	else:
 		if flashlight_battery_remaining > 0:
 			fl.visible = true
@@ -95,11 +96,6 @@ func _physics_process(delta):
 			# if the flashlight is no longer pointing at anything but Z is still held, turn update the text
 			if fla.get_overlapping_areas().size() == 0: 
 				pass
-			var tp = flac.polygon
-			tp[0] = tp[0].rotated(get_angle_to((prev_angle)))
-			tp[1] = tp[1].rotated(get_angle_to((prev_angle)))
-			tp[2] = tp[2].rotated(get_angle_to((prev_angle)))
-			gui.get_node("Label").text = str(tp)
 		
 	velocity = move_and_slide(velocity)
 	
@@ -141,10 +137,14 @@ func _physics_process(delta):
 	# 	gui.get_node("Label").text = ""
 
 	battery_loss_rate_frame -= 1
-
+	# update()
 	pass
 	
-
+func _draw():
+	# draw_circle(flac.polygon[0].rotated(get_angle_to((prev_angle))), 5, Color8(255, 0, 0))
+	# draw_circle(flac.polygon[1].rotated(get_angle_to((prev_angle))), 5, Color8(255, 0, 0))
+	# draw_circle(flac.polygon[2].rotated(get_angle_to((prev_angle))), 5, Color8(255, 0, 0))
+	pass
 
 func _on_Hurtbox_area_entered(area:Area2D):
 	if "Infection" in area.name:
@@ -198,6 +198,6 @@ func inside_tri(p: Vector2, v1: Vector2, v2: Vector2, v3: Vector2) -> bool:
 	var s := 1/(2*area)*(v1.y*v3.x - v1.x*v3.y + (v3.y - v1.y)*p.x + (v1.x - v3.x)*p.y)
 	var t := 1/(2*area)*(v1.x*v2.y - v1.y*v2.x + (v1.y - v2.y)*p.x + (v2.x - v1.x)*p.y)
 
-	return s > 0 and t > 0 and (1-s-t) > 0
+	return s >= 0 and t >= 0 and (1-s-t) >= 0
 
 

@@ -2052,7 +2052,6 @@ points = PoolVector2Array( 0, 0, 16, 0, 16, 16, 0, 16 )
 
 [node name="World" type="Node2D"]
 pause_mode = 1
-position = Vector2( 0, 2 )
 script = ExtResource( 8 )
 
 [node name="CutscenePlayer" type="AnimationPlayer" parent="."]
@@ -2271,7 +2270,7 @@ color = Color( 0.0392157, 0.0392157, 0.0392157, 1 )
 position = Vector2( -320, 0 )
 
 [node name="Spread2" parent="." instance=ExtResource( 12 )]
-position = Vector2( -226, -1086 )
+position = Vector2( -129, -209 )
 
 [node name="EnemyTileMap" type="TileMap" parent="."]
 z_index = -1

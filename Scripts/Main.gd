@@ -24,7 +24,9 @@ var npc_names = ["Orion", "Petra", "Oasis", "Aurora", "Borealis", "Mark"]
 var dead_npc_names = []
 var is_inventory_open = false # is the inventory open
 var inf_points = [] # all infection tile points
-
+var invalids = [] # all invalid points
+var invalidRemovalCountdown := 240 # wait 240 frames (4 secs) before spreading to invalid points
+var invalidRemovalCountdownRate := invalidRemovalCountdown
 var extra # extra temporary info for general tasks
 
 
@@ -41,18 +43,22 @@ func _draw():
 	pass
 	
 func _process(_delta):
+	if invalidRemovalCountdownRate <= 0:
+		invalids = PoolVector2Array()
+		invalidRemovalCountdownRate = invalidRemovalCountdown
 	# -------------------------------------------- spread control -------------------------------------------- #
 	# var state = get_world_2d().direct_space_state
 	for s in get_tree().get_nodes_in_group("spreaders"):
 		s.setTarget(player.global_position)
 		if !s.isSpreading():
-			s.setGridInterval(2)
+			s.setGridInterval(3)
 			s.setMaxClosestPoints(32)
 			s.startSpread()
 		# inf_points.append_array(s.getPoints())
 	
+	invalidRemovalCountdownRate -= 1
+	# update()
 	pass
-	update()
 
 func _physics_process(_delta):
 	# -------------------------------------------- item control -------------------------------------------- #
@@ -183,7 +189,7 @@ func _on_Player_game_over():
 	get_tree().paused = true
 	player_flashlight.visible = false
 	pass
-
+""" 
 func cwsort(pts: PoolVector2Array):
 	var p = Array(pts)
 	var centre := Vector2()
@@ -194,6 +200,28 @@ func cwsort(pts: PoolVector2Array):
 	centre.y /= pts.size()
 	extra = centre
 	p.sort_custom(self, "sort_ccw")
+	return p
 
-func sort_ccw(p1: Vector2, p2: Vector2):
-	return (p1 - extra).angle() < (p2 - extra).angle()
+func sort_ccw(a: Vector2, b: Vector2):
+	if (a.x - extra.x >= 0 && b.x - extra.x < 0): 
+		return true
+	if (a.x - extra.x < 0 && b.x - extra.x >= 0): 
+		return false
+	if (a.x - extra.x == 0 && b.x - extra.x == 0): 
+	    if (a.y - extra.y >= 0 || b.y - extra.y >= 0): 
+	        return a.y > b.y
+	    return b.y > a.y
+    
+
+    # compute the cross product of vectors (extra -> a) x (extra -> b)
+	var det = (a.x - extra.x) * (b.y - extra.y) - (b.x - extra.x) * (a.y - extra.y)
+	if (det < 0): 
+	    return true
+	if (det > 0): 
+	    return false	
+	# points a and b are on the same line from the center
+	# check which point is closer to the center
+	var d1 = (a.x - extra.x) * (a.x - extra.x) + (a.y - extra.y) * (a.y - extra.y)
+	var d2 = (b.x - extra.x) * (b.x - extra.x) + (b.y - extra.y) * (b.y - extra.y)
+	return d1 > d2;
+ """

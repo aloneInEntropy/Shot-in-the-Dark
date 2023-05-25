@@ -29,8 +29,6 @@ var height = ProjectSettings.get_setting("display/window/size/height")
 # var width = 1000
 # var height = 1000
 var can_spread := false	# allow searching and spreading
-var invalidRemovalCountdown := 120
-var invalidRemovalCountdownRate := invalidRemovalCountdown
 var inf_points = []
 
 """ 
@@ -46,32 +44,14 @@ prev test width/height: 960, 540
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	# print(transform.origin)
 	add_to_group("spreaders")
-
-	# target = Vector2(stepify(width/2, gap), stepify(height/10, gap))
-	# target = Vector2(stepify(-width, gap), stepify(-height, gap))
-	# target = Vector2.ZERO
-	# points.append(Vector2(stepify(width/2, gap), stepify(height - height/10, gap)))
-	points.append(Vector2(stepify(position.x, gap), stepify(position.y, gap)))
+	points.append(Vector2(stepify(global_position.x, gap), stepify(global_position.y, gap)))
 	
 
 func _process(_delta):
-	if invalidRemovalCountdownRate == 0:
-		invalids = PoolVector2Array()
-		invalidRemovalCountdownRate = invalidRemovalCountdown
+	checkDeath()
 	if can_spread:
 		# update()
-		
-		var poly = player.flac.polygon
-		inf_points = Array(poly)
-		# var poly = player.flac
-		# poly.rotate(player.fl.global_rotation)
-		# poly = poly.polygon
-		# rotate flashlight polygon in the direction of player movement
-		poly[0] = poly[0].rotated(get_angle_to((player.prev_angle-poly[0]))) + player.global_position
-		poly[1] = poly[1].rotated(get_angle_to((player.prev_angle-poly[1]))) + player.global_position
-		poly[2] = poly[2].rotated(get_angle_to((player.prev_angle-poly[2]))) + player.global_position
 
 		op = checkBoundary(points, op, gap)
 		points.append_array(op)
@@ -100,41 +80,33 @@ func _process(_delta):
 			)
 			infection_tiles.update_dirty_quadrants()
 			if roundToN(target, gap).is_equal_approx(p):
-				# print(inners.has(Vector2(stepify(target.x, gap), stepify(target.y, gap))))
-				# print("DIED " + str(Vector2(stepify(target.x, gap), stepify(target.y, gap))) + " " + str(rng.randi()))
 				grid_interval = 10000
 			else: 
 				grid_interval = pgi
 
 			
 			if player.flashing:
-				# print(s)
-				# print(poly)
-				if player.inside_tri(p, poly[0], poly[1], poly[2]):
-					# print("####################################### " + str(rng.randi()))
-					removePoint(p)
-					# inf_points.append(p)
-					pass
+				# get all areas intersecting with the current point on collision layer 2
+				# (doesn't seem to care about the collision layer, so be careful)
+				var res = get_world_2d().get_direct_space_state().intersect_point(p, 32, [], 2, false, true)
+				for d in res:
+					if d["collider"] == player.fla:
+						removePoint(p)
+						pass
 		
 
-		# if checkInside(target, points):
-		# 	# print(inners.has(Vector2(stepify(target.x, gap), stepify(target.y, gap))))
-		# 	print("DIED " + str(Vector2(stepify(target.x, gap), stepify(target.y, gap))) + " " + str(rng.randi()))
-		# 	grid_interval = 10000
-		# else: 
-		# 	grid_interval = pgi
+		if checkInside(target, points):
+			# print(inners.has(Vector2(stepify(target.x, gap), stepify(target.y, gap))))
+			print("DIED " + str(Vector2(stepify(target.x, gap), stepify(target.y, gap))) + " " + str(rng.randi()))
+			grid_interval = 10000
+			can_spread = false
+		else: 
+			grid_interval = pgi
 
 		closest = findClosestPoints(op, target, maxClosestPoints)
 		
 		op = PoolVector2Array() # clear
-		# print(Engine.get_frames_per_second())
-		# print(points.size())
-		# print(target)
 		
-
-
-	invalidRemovalCountdownRate -= 1
-
 
 func _physics_process(_delta):
 	pass	
@@ -144,6 +116,11 @@ func _draw():
 	draw_circle(target - position, 10, Color8(0, 255, 0))	
 	for p in points:
 		draw_circle(p - position, 2, Color8(255, 255, 255))
+	# var tpts = Geometry.convex_hull_2d(points)
+	# var v = tpts[0]
+	# for p in tpts:
+	# 	draw_line(v-global_position, p-global_position, Color.white, 3)
+	# 	v = p
 	pass
 
 
@@ -212,7 +189,7 @@ func pathfind(pts: PoolVector2Array, tgt: Vector2, interval: int) -> PoolVector2
 					amnt_y = -gap
 
 			var npv := Vector2(stepify(p.x+amnt_x, gap), stepify(p.y+amnt_y, gap))
-			if !pts.has(npv) and !invalids.has(npv):
+			if !pts.has(npv) and !world.invalids.has(npv):
 				pts.append(npv)
 		i += 1
 	return pts
@@ -377,13 +354,13 @@ func setGridInterval(s: int):
 
 
 # get an array of all points not allowed to be spread to
-func getInvalidPoints() -> PoolVector2Array:
-	return invalids
+# func getInvalidPoints() -> PoolVector2Array:
+# 	return world.invalids
 	
 	
-# set the points not allowed to be spread to
-func setInvalidPoints(npts: PoolVector2Array) -> void:
-	invalids = PoolVector2Array(npts)
+# # set the points not allowed to be spread to
+# func setInvalidPoints(npts: PoolVector2Array) -> void:
+# 	world.invalids = PoolVector2Array(npts)
 		
 
 # get all points this node has spread to
@@ -443,5 +420,9 @@ func removePoint(v: Vector2):
 			v.y/infection_tiles.cell_quadrant_size, 
 			-1
 		)
-		invalids.append(v)
-		print(v)
+		world.invalids.append(v)
+		# print(v)
+
+func checkDeath():
+	if points.size() == 0:
+		queue_free()
