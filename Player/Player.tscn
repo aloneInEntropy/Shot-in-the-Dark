@@ -1,4 +1,4 @@
-[gd_scene load_steps=32 format=2]
+[gd_scene load_steps=33 format=2]
 
 [ext_resource path="res://Scripts/Player.gd" type="Script" id=1]
 [ext_resource path="res://Assets/Spritesheets/Bee_anim_64.png" type="Texture" id=2]
@@ -230,9 +230,11 @@ graph_offset = Vector2( 10, 27 )
 
 [sub_resource type="AnimationNodeStateMachinePlayback" id=18]
 
-[sub_resource type="CapsuleShape2D" id=44]
-radius = 8.0
-height = 0.0
+[sub_resource type="CircleShape2D" id=46]
+radius = 21.0
+
+[sub_resource type="RectangleShape2D" id=47]
+extents = Vector2( 8.00001, 6 )
 
 [sub_resource type="CapsuleShape2D" id=45]
 radius = 16.0
@@ -251,7 +253,7 @@ position = Vector2( 0, -8 )
 texture = ExtResource( 2 )
 hframes = 4
 vframes = 3
-frame = 6
+frame = 1
 
 [node name="Collider" type="CollisionShape2D" parent="."]
 rotation = -1.5708
@@ -293,11 +295,14 @@ collision_layer = 2
 [node name="FlashlightCollider" type="CollisionPolygon2D" parent="Flashlight/FlashlightArea"]
 polygon = PoolVector2Array( 128, -64, 128, 64, 0, 0 )
 
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Flashlight/FlashlightArea"]
+shape = SubResource( 46 )
+
 [node name="Hurtbox" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
 rotation = -1.5708
-shape = SubResource( 44 )
+shape = SubResource( 47 )
 
 [node name="InteractBox" type="Area2D" parent="."]
 collision_layer = 2
@@ -306,6 +311,12 @@ collision_mask = 2
 [node name="CollisionShape2D" type="CollisionShape2D" parent="InteractBox"]
 position = Vector2( 0, -8 )
 shape = SubResource( 45 )
+
+[node name="PlayerGlow" type="Light2D" parent="."]
+position = Vector2( 0, -8 )
+texture = ExtResource( 3 )
+texture_scale = 0.5
+color = Color( 0.670588, 0.607843, 0.32549, 1 )
 
 [connection signal="area_entered" from="Hurtbox" to="." method="_on_Hurtbox_area_entered"]
 [connection signal="area_entered" from="InteractBox" to="." method="_on_InteractBox_area_entered"]

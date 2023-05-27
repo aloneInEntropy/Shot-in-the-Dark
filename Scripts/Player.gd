@@ -22,10 +22,10 @@ onready var item_names = world.item_names
 onready var npc_names = world.npc_names
 
 var flashlight_battery_remaining = 100 # flashlight battery remaining
-var flashlight_battery_loss = 0 # the amount to decrease the flashlight battery by
+var flashlight_battery_loss = 0.5 # the amount to decrease the flashlight battery by
 var battery_loss_rate = 10 # decrease battery by `flashlight_battery_loss` amount every 10 frames
 var battery_loss_rate_frame = battery_loss_rate # the current battery loss frame
-var added_battery_amount = 45 # how much generic battery pickups increase the battery by
+var added_battery_amount = 35 # how much generic battery pickups increase the battery by
 
 var can_item_interact = false # is the player in a position where they can interact with an item?
 var can_npc_interact = false # is the player in a position where they can interact with an NPC?
@@ -101,23 +101,23 @@ func _physics_process(delta):
 	
 	if can_item_interact:
 		# print("here")
-		if Input.get_action_strength("ui_pick_up") != 0:
-			if !item_overlapping.proper_name == "Batteries":
-				world.spawn_positions_used.erase(item_overlapping.position)
-				player_item_selected = item_overlapping
-				world.inventory.is_active(true)
-				world.inventory.held_item = player_item_selected
-			else:
-				# add to battery
-				flashlight_battery_remaining = min(100, flashlight_battery_remaining + added_battery_amount)
-				gui.get_node("FlashlightRemaining").set_battery(flashlight_battery_remaining)
-				# print("up: " + str(flashlight_battery_remaining))
-				world.spawn_positions_used.erase(item_overlapping.position)
-				item_overlapping.queue_free()
-				item_overlapping = null
-				world.item_spawn_timer = world.item_spawn_max_timer
-		else:
-			pass
+		if item_overlapping.has_item:
+			if Input.get_action_strength("ui_pick_up") != 0:
+				if item_overlapping.proper_name == "Batteries":
+					# add to battery
+					flashlight_battery_remaining = min(100, flashlight_battery_remaining + added_battery_amount)
+					gui.get_node("FlashlightRemaining").set_battery(flashlight_battery_remaining)
+					# print("up: " + str(flashlight_battery_remaining))
+					world.spawn_positions_used.erase(item_overlapping.position)
+					item_overlapping.takeItem()
+					# item_overlapping.queue_free()
+					# item_overlapping = null
+					world.item_spawn_timer = world.item_spawn_max_timer
+				else:
+					# world.spawn_positions_used.erase(item_overlapping.position)
+					player_item_selected = item_overlapping
+					world.inventory.is_active(true)
+					world.inventory.held_item = player_item_selected
 	# else:
 	# 	gui.get_node("Label").text = ""
 	
@@ -155,12 +155,13 @@ func _on_InteractBox_area_entered(area:Area2D):
 	var item_name = ""
 	if area.name == "Generator":
 		at_generator = true
-	elif "proper_name" in area:
+	elif "has_item" in area and area.has_item:
 		item_name = area.proper_name
 	else:	
 		item_name = area.name
 	# print("entrered " + item_name)
 	if item_name in item_names:
+		# print(item_name)
 		can_item_interact = true
 		item_overlapping = area
 	elif item_name in npc_names:

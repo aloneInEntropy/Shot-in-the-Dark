@@ -1,0 +1,7 @@
+- [x] New infection set using points rather than individual Node2D for each infection node
+- [x] Interactions between flashlight and new infection points
+- [x] Lighting under infection points (possibly massive lightmap with occlusion tiles?)
+- [x] Cleaned up item spawning spaghetti code
+- [ ] Dummy/invalid points: points not allowed to be spread to
+- [ ] Better pathfinding (BFS, A*, etc.) while keeping randomness
+- [ ] Redraw infection sprite

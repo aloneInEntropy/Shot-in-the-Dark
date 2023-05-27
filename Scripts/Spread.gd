@@ -1,10 +1,10 @@
 extends Area2D
 
 # onready variables
-onready var infection = preload("res://NPC/Infection.tscn") # get the infection instance
-onready var world = get_tree().get_root().get_node("World")
-onready var player = world.get_node("YSort/Player")
-onready var infection_tiles = world.get_node("EnemyTileMap")
+# onready var infection = preload("res://Scenes/Infection.tscn") # get the infection instance
+onready var world = get_tree().get_root().get_node_or_null("World")
+onready var player = world.get_node_or_null("YSort/Player") if world else null
+onready var infection_tiles = get_node("EnemyTileMap")
 onready var timer = $Timer
 
 # arrays
@@ -15,14 +15,15 @@ var closest := PoolVector2Array() # closest boundary points
 var invalids := PoolVector2Array() # all points not allowed to spread to
 
 # variables
+export var POINT_LIMIT := 300 # maximum number of points allowed for an individual spreader
+export var gap := 16
+export var grid_interval := 1
+export var maxClosestPoints := 64
 var rng := RandomNumberGenerator.new()
-var gap := 16
 var target := Vector2()
 var rLowerBound := 5
 var rMiddleBound := 10
 var rUpperBound := 100
-var maxClosestPoints := 64
-var grid_interval := 1
 var pgi := 1
 var width = ProjectSettings.get_setting("display/window/size/width")
 var height = ProjectSettings.get_setting("display/window/size/height")
@@ -30,14 +31,13 @@ var height = ProjectSettings.get_setting("display/window/size/height")
 # var height = 1000
 var can_spread := false	# allow searching and spreading
 var inf_points = []
+var frame = 0
 
 """ 
 The main idea here is to use the study in grid_test.pde to store an array of Vector2s instead of an array of Area2Ds
 to build an infection outwards from the Core object (here called Spread to differentiate it). Then, the Infection.png sprite
 will be tiled across every point (where each tile's origin is the top-left corner of the tile, which would be that point) 
 to simulate an expansion of one singular mass, rather than several smaller nodes.
-
-
 
 prev test width/height: 960, 540
 """
@@ -46,9 +46,13 @@ prev test width/height: 960, 540
 func _ready():
 	add_to_group("spreaders")
 	points.append(Vector2(stepify(global_position.x, gap), stepify(global_position.y, gap)))
+	position.x = stepify(position.x, gap)
+	position.y = stepify(position.y, gap)
 	
 
 func _process(_delta):
+	frame = int(wrapf(frame, 0, 60))
+	frame += 1
 	checkDeath()
 	if can_spread:
 		# update()
@@ -59,12 +63,17 @@ func _process(_delta):
 
 		# target = get_viewport().get_mouse_position() - Vector2(width/2, height/2)
 
-		if !points.empty():
-			if closest.empty():
-				points = pathfind(points, target, grid_interval)
-			else: 
-				points.append_array(pathfind(closest, target, grid_interval))
-				points = removeDuplicates(points)
+		if frame % grid_interval == 0:
+			if !points.empty():
+				if closest.empty():
+					points = pathfind(points, target)
+				else: 
+					points.append_array(pathfind(closest, target))
+					points = removeDuplicates(points)
+
+		if points.size() > POINT_LIMIT:
+			# print("limit reached; point removed" + str(points[0]))
+			removePoint(points[0])
 		
 		for p in points:
 			# if (points.has(Vector2(p.x + gap, p.y + gap)) and
@@ -73,19 +82,15 @@ func _process(_delta):
 			# 	!inners.has(p) and
 			# 	!op.has(p)):
 			# 		inners.append(p)
-			infection_tiles.set_cell(
-				p.x/infection_tiles.cell_quadrant_size, 
-				p.y/infection_tiles.cell_quadrant_size, 
-				0
-			)
-			infection_tiles.update_dirty_quadrants()
+			
+			placeTile(p, 1)
 			if roundToN(target, gap).is_equal_approx(p):
 				grid_interval = 10000
 			else: 
 				grid_interval = pgi
 
 			
-			if player.flashing:
+			if player and player.flashing:
 				# get all areas intersecting with the current point on collision layer 2
 				# (doesn't seem to care about the collision layer, so be careful)
 				var res = get_world_2d().get_direct_space_state().intersect_point(p, 32, [], 2, false, true)
@@ -99,7 +104,7 @@ func _process(_delta):
 			# print(inners.has(Vector2(stepify(target.x, gap), stepify(target.y, gap))))
 			print("DIED " + str(Vector2(stepify(target.x, gap), stepify(target.y, gap))) + " " + str(rng.randi()))
 			grid_interval = 10000
-			can_spread = false
+			# can_spread = false
 		else: 
 			grid_interval = pgi
 
@@ -113,9 +118,9 @@ func _physics_process(_delta):
 
 
 func _draw():
-	draw_circle(target - position, 10, Color8(0, 255, 0))	
-	for p in points:
-		draw_circle(p - position, 2, Color8(255, 255, 255))
+	# draw_circle(target - position, 10, Color8(0, 255, 0))	
+	# for p in points:
+	# 	draw_circle(p - position, 2, Color8(255, 255, 255))
 	# var tpts = Geometry.convex_hull_2d(points)
 	# var v = tpts[0]
 	# for p in tpts:
@@ -149,49 +154,47 @@ func findClosestPoints(pts: PoolVector2Array, tgt: Vector2, k: int) -> PoolVecto
 
 
 # This algorithm has a `k`% change to move towards the target, depending on it's position relative to the target. There is also a `j`% change to move in a random direction. This random direction has a `i`/2% change to be no direction, and `i`/2% change to be right/down, and an `i`% change to be left/up. This allows for variety in spread that can be controlled by changing the probabilities. A breadth-first can_spread would head straight for the target but may not be sufficiently random. The speed of a BFS implementation would still allow the speed to be controlled using the grid interval.
-func pathfind(pts: PoolVector2Array, tgt: Vector2, interval: int) -> PoolVector2Array:
+func pathfind(pts: PoolVector2Array, tgt: Vector2) -> PoolVector2Array:
 	var tpvs := PoolVector2Array(pts) # store copy of pts
-	var i : int = 0
-
+	
 	for p in tpvs:
-		if interval > 0 and i % int(min(interval, tpvs.size())) == 0:
-			var rnd_dir_x := rng.randi_range(0, rUpperBound)
-			var rnd_dir_y := rng.randi_range(0, rUpperBound)
-			var amnt_x := 0
-			var amnt_y := 0
+		var rnd_dir_x := rng.randi_range(0, rUpperBound)
+		var rnd_dir_y := rng.randi_range(0, rUpperBound)
+		var amnt_x := 0
+		var amnt_y := 0
 
-			# random x direction to move in
-			if rnd_dir_x <= rLowerBound:
-				if rnd_dir_x % 2 == 0:
-					amnt_x = gap
-				else:
-					amnt_x = 0
-			elif rnd_dir_x <= rMiddleBound:
+		# random x direction to move in
+		if rnd_dir_x <= rLowerBound:
+			if rnd_dir_x % 2 == 0:
+				amnt_x = gap
+			else:
+				amnt_x = 0
+		elif rnd_dir_x <= rMiddleBound:
+			amnt_x = -gap
+		else:
+			if tgt.x >= p.x:
+				amnt_x = gap
+			else:
 				amnt_x = -gap
+		
+		# random y direction to move in
+		if rnd_dir_y <= rLowerBound:
+			if rnd_dir_y % 2 == 0:
+				amnt_y = gap
 			else:
-				if tgt.x >= p.x:
-					amnt_x = gap
-				else:
-					amnt_x = -gap
-			
-			# random y direction to move in
-			if rnd_dir_y <= rLowerBound:
-				if rnd_dir_y % 2 == 0:
-					amnt_y = gap
-				else:
-					amnt_y = 0
-			elif rnd_dir_y <= rMiddleBound:
+				amnt_y = 0
+		elif rnd_dir_y <= rMiddleBound:
+			amnt_y = -gap
+		else:
+			if tgt.y >= p.y:
+				amnt_y = gap
+			else:
 				amnt_y = -gap
-			else:
-				if tgt.y >= p.y:
-					amnt_y = gap
-				else:
-					amnt_y = -gap
 
-			var npv := Vector2(stepify(p.x+amnt_x, gap), stepify(p.y+amnt_y, gap))
-			if !pts.has(npv) and !world.invalids.has(npv):
-				pts.append(npv)
-		i += 1
+		var npv := Vector2(stepify(p.x+amnt_x, gap), stepify(p.y+amnt_y, gap))
+		if !pts.has(npv) and !world.temp_invalids.has(npv):
+			pts.append(npv)
+
 	return pts
 
 
@@ -351,6 +354,7 @@ func getGridInterval():
 func setGridInterval(s: int):
 	pgi = s
 	grid_interval = s
+	frame = s
 
 
 # get an array of all points not allowed to be spread to
@@ -411,18 +415,31 @@ func checkInside(t: Vector2, pts: PoolVector2Array) -> bool:
 func roundToN(v: Vector2, n: int):
 	return Vector2(stepify(v.x, n), stepify(v.y, n))
 
+# places a tile with tile number `tn` at point `v`
+func placeTile(v: Vector2, tn: int):
+	if v in points:
+		infection_tiles.set_cell(
+			stepify((v.x-global_position.x), gap)/infection_tiles.cell_quadrant_size,
+			stepify((v.y-global_position.y), gap)/infection_tiles.cell_quadrant_size,
+			tn
+		)
+		infection_tiles.update_dirty_quadrants()
+		return true
+	return false
+
 func removePoint(v: Vector2):
 	var i := points.find(v)
 	if i >= 0: 
 		points.remove(i)
 		infection_tiles.set_cell(
-			v.x/infection_tiles.cell_quadrant_size, 
-			v.y/infection_tiles.cell_quadrant_size, 
+			stepify((v.x-global_position.x), gap)/infection_tiles.cell_quadrant_size,
+			stepify((v.y-global_position.y), gap)/infection_tiles.cell_quadrant_size,
 			-1
 		)
-		world.invalids.append(v)
+		world.temp_invalids.append(v)
 		# print(v)
 
 func checkDeath():
 	if points.size() == 0:
+		print(name + " is destroyed!")
 		queue_free()

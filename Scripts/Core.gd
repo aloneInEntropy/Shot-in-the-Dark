@@ -17,7 +17,7 @@ var spawn_countdown = spawn_timer
 func _ready():
 	# print(transform.origin)
 	
-	p = preload("res://NPC/Infection.tscn") # get the infection instance
+	p = preload("res://Scenes/Infection.tscn") # get the infection instance
 
 	q = p.instance()
 	add_child(q) 

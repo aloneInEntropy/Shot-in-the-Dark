@@ -3,7 +3,7 @@ extends Area2D
 
 signal game_over
 
-var parts_needed = 2
+var parts_needed = 5
 var parts_obtained = 0
 
 func _process(_delta):

@@ -25,7 +25,7 @@ onready var col = $CollisionShape2D
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	infection_inst = load("res://NPC/Infection.tscn") # get the infection instance
+	infection_inst = load("res://Scenes/Infection.tscn") # get the infection instance
 	adj_detector.set_collide_with_areas(true)
 	adj_detector.add_exception(glow_area)
 	parent_node = get_parent()

@@ -62,7 +62,7 @@ func _process(_delta):
 	if Input.get_action_strength("ui_cancel") != 0:
 		# close inventory
 		if held_item:
-			held_item.queue_free()
+			# held_item.queue_free()
 			held_item = null
 		elif player.is_talking:
 			# if the player is talking to an NPC but leaves without giving them anything, don't change the inventory
@@ -72,11 +72,13 @@ func _process(_delta):
 		get_tree().get_root().get_node("World").is_inventory_open = false
 	
 	if Input.get_action_strength("ui_accept") != 0:
-		if held_item:
+		if held_item and held_item.has_item:
 			# take item
 			inventory.set_item(player_index, load("res://Assets/Items/" + held_item.proper_name + ".tres"))
-			held_item.queue_free()
-			held_item = null
+			print("accepting: " + held_item.proper_name)
+			held_item.takeItem()
+			# held_item.queue_free()
+			# held_item = null
 			# print(inventory.items)
 			# close inventory
 			is_active(false)
@@ -102,15 +104,6 @@ func _process(_delta):
 					get_tree().get_root().get_node("World").is_inventory_open = false
 			pass
 			
-
-		
-
-# func _unhandled_input(event):
-# 	if event.is_action_pressed("ui_cancel"):
-# 		# close inventory
-# 		is_inventory_active = false
-# 		get_tree().get_root().get_node("World").is_inventory_open = false
-# 		print("inventory closed")
 
 func is_active(value):
 	is_inventory_active = value

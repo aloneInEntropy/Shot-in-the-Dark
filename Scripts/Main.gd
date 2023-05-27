@@ -8,7 +8,8 @@ onready var gui = $GUI
 onready var player = $YSort/Player # player
 onready var player_flashlight = $GUI/FlashlightRemaining
 onready var generator = $YSort/Generator
-onready var infection_tiles := $EnemyTileMap
+onready var hallway_tiles := $HallwayTileMap
+onready var infection_light := $YSort/Player/InfectionLight
 var item_spawner = load("res://Scenes/Item.tscn")
 var rng = RandomNumberGenerator.new()
 
@@ -24,15 +25,17 @@ var npc_names = ["Orion", "Petra", "Oasis", "Aurora", "Borealis", "Mark"]
 var dead_npc_names = []
 var is_inventory_open = false # is the inventory open
 var inf_points = [] # all infection tile points
-var invalids = [] # all invalid points
-var invalidRemovalCountdown := 240 # wait 240 frames (4 secs) before spreading to invalid points
-var invalidRemovalCountdownRate := invalidRemovalCountdown
+var temp_invalids = [] # all invalid points
+var temp_invalid_removal_countdown := 240 # wait 240 frames (4 secs) before spreading to invalid points
+var temp_invalid_removal_countdown_rate := temp_invalid_removal_countdown
 var extra # extra temporary info for general tasks
 
 
 func _ready():
 	rng.randomize()
 	player_flashlight.visible = true
+	var inflight := get_viewport().size
+	infection_light.scale = inflight/16
 
 func _draw():
 	# draw_circle(target - position, 10, Color8(0, 255, 0))	
@@ -42,59 +45,25 @@ func _draw():
 	# 	draw_circle(p, 5, Color8(255, 0, 0))
 	pass
 	
-func _process(_delta):
-	if invalidRemovalCountdownRate <= 0:
-		invalids = PoolVector2Array()
-		invalidRemovalCountdownRate = invalidRemovalCountdown
+func _process(delta):
+	if temp_invalid_removal_countdown_rate <= 0:
+		temp_invalids = PoolVector2Array()
+		temp_invalid_removal_countdown_rate = temp_invalid_removal_countdown
 	# -------------------------------------------- spread control -------------------------------------------- #
 	# var state = get_world_2d().direct_space_state
 	for s in get_tree().get_nodes_in_group("spreaders"):
 		s.setTarget(player.global_position)
 		if !s.isSpreading():
-			s.setGridInterval(3)
+			s.setGridInterval(16)
 			s.setMaxClosestPoints(32)
 			s.startSpread()
 		# inf_points.append_array(s.getPoints())
 	
-	invalidRemovalCountdownRate -= 1
+	temp_invalid_removal_countdown_rate -= 1 * delta
 	# update()
 	pass
 
 func _physics_process(_delta):
-	# -------------------------------------------- item control -------------------------------------------- #
-	# print("stage 1")
-	if spawn_positions_used.size() < spawn_positions.size():
-		if item_spawn_timer <= 0:
-		# print("stage 2")
-		# instantiate a random items in any free spaces
-			var item_instance = item_spawner.instance()
-			item_spawn_container.add_child(item_instance)
-			# print("stage 3")
-			# while there is a free position
-			var new_position = Vector2(spawn_positions[rng.randi_range(0, spawn_positions.size() - 1)])
-			# print("stage 4")
-			while spawn_positions_used.find(new_position) != -1:
-				# pick a random position free position until you find it
-				new_position = Vector2(spawn_positions[rng.randi_range(0, spawn_positions.size() - 1)])
-			# print("stage 5")
-			spawn_positions_used.append(new_position)
-			item_instance.position = new_position
-
-			# pick a random item using it's name as a key.
-			# since duplicated items will attach extra characters to the name, set the "proper_name" first, so the item can be inferred using it, then set the item's name to the proper name.
-			item_instance.proper_name = item_names[rng.randi_range(0, item_names.size()-1)]
-			item_instance.name = item_instance.proper_name
-			
-			# print(item_instance.name + ", " + str(item_instance.position))
-			# print(str(spawn_positions_used.size()) + ", " + str(spawn_positions.size()))
-			item_spawn_timer = item_spawn_max_timer
-		else:
-			item_spawn_timer -= 1
-		
-	# print("stage 6")
-	if item_spawn_timer < -100:
-		item_spawn_timer = -1
-
 	if !is_inventory_open:
 		# if the inventory isn't open
 		if Input.get_action_strength("ui_inventory") != 0:

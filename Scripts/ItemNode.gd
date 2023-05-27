@@ -1,38 +1,59 @@
 extends Area2D
 
 onready var sprite = $Sprite
+onready var timer = $Timer
+var rng = RandomNumberGenerator.new()
 var proper_name
+# names of items, with duplicate names to mock probability
+var item_names = ["Bread", "Batteries", "Cupcake", "Sweet", "MetalParts", "WaterBottle", "Chicken", "Batteries", "Batteries"] 
+
+"""textures"""
+var bread_texture = preload("res://Assets/Items/Sprites/bread.png") # bread texture
+var batteries_texture = preload("res://Assets/Items/Sprites/batteries.png") # batteries texture
+var cupcake_texture = preload("res://Assets/Items/Sprites/cupcake.png") # cupcake texture
+var sweet_texture = preload("res://Assets/Items/Sprites/sweet.png") # sweet texture
+var metal_texture = preload("res://Assets/Items/Sprites/metal-parts.png") # metal texture
+var water_texture = preload("res://Assets/Items/Sprites/water-bottle.png") # water texture
+var chicken_texture = preload("res://Assets/Items/Sprites/chicken.png") # chicken texture
+var empty_texture = preload("res://Assets/Items/Sprites/Empty.png") # empty texture
+
+var has_item
 
 func _ready():
-	# print(global_position)
-	proper_name = name
-	if name == "Bread":
-		sprite.texture = load("res://Assets/Items/Sprites/bread.png")
-	elif name == "Batteries":
-		sprite.texture = load("res://Assets/Items/Sprites/batteries.png")
-	elif name == "Cupcake":
-		sprite.texture = load("res://Assets/Items/Sprites/cupcake.png")
-	elif name == "Sweet":
-		sprite.texture = load("res://Assets/Items/Sprites/sweet.png")
-	elif name == "MetalParts":
-		sprite.texture = load("res://Assets/Items/Sprites/metal-parts.png")
-	elif name == "WaterBottle":
-		sprite.texture = load("res://Assets/Items/Sprites/water-bottle.png")
-	elif name == "Chicken":
-		sprite.texture = load("res://Assets/Items/Sprites/chicken.png")
-		
+	rng.randomize()
+	loadRandomItem()
+	
 func _process(_delta):
-	if name == "Bread":
-		sprite.texture = load("res://Assets/Items/Sprites/bread.png")
-	elif name == "Batteries":
-		sprite.texture = load("res://Assets/Items/Sprites/batteries.png")
-	elif name == "Cupcake":
-		sprite.texture = load("res://Assets/Items/Sprites/cupcake.png")
-	elif name == "Sweet":
-		sprite.texture = load("res://Assets/Items/Sprites/sweet.png")
-	elif name == "MetalParts":
-		sprite.texture = load("res://Assets/Items/Sprites/metal-parts.png")
-	elif name == "WaterBottle":
-		sprite.texture = load("res://Assets/Items/Sprites/water-bottle.png")
-	elif name == "Chicken":
-		sprite.texture = load("res://Assets/Items/Sprites/chicken.png")
+	if has_item: timer.stop()
+	
+func loadRandomItem():
+	proper_name = item_names[rng.randi_range(0, item_names.size()-1)]
+	loadTexture(proper_name)
+	has_item = true
+			
+func loadTexture(texture_name: String):
+	if texture_name == "Bread":
+		sprite.texture = bread_texture
+	elif texture_name == "Batteries":
+		sprite.texture = batteries_texture
+	elif texture_name == "Cupcake":
+		sprite.texture = cupcake_texture
+	elif texture_name == "Sweet":
+		sprite.texture = sweet_texture
+	elif texture_name == "MetalParts":
+		sprite.texture = metal_texture
+	elif texture_name == "WaterBottle":
+		sprite.texture = water_texture
+	elif texture_name == "Chicken":
+		sprite.texture = chicken_texture
+
+func _on_Timer_timeout():
+	loadRandomItem()
+	# print("spawned item")
+
+func takeItem():
+	has_item = false
+	proper_name = "EMPTY"
+	sprite.texture = empty_texture
+	timer.start()
+
