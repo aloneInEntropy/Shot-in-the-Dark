@@ -2,14 +2,14 @@ extends Node2D
 
 # onready var cutscene_player = $CutscenePlayer
 # onready var cts1 = $Cutscenes/cutscene_trigger_1
-onready var item_spawn_container = $ItemSpawnPositions
+onready var item_spawn_container = $Floor1/ItemSpawnPositions
 onready var inventory = $GUI/InventoryContainer
 onready var gui = $GUI
-onready var player = $YSort/Player # player
+onready var player = $Player # player
 onready var player_flashlight = $GUI/FlashlightRemaining
-onready var generator = $YSort/Generator
-onready var hallway_tiles := $HallwayTileMap
-onready var infection_light := $YSort/Player/InfectionLight
+onready var generator = $Floor1/YSort/Generator
+onready var hallway_tiles := $Floor1/HallwayTileMap
+onready var infection_light := $Player/InfectionLight
 var item_spawner = load("res://Scenes/Item.tscn")
 var rng = RandomNumberGenerator.new()
 
@@ -69,11 +69,11 @@ func _physics_process(_delta):
 		if Input.get_action_strength("ui_inventory") != 0:
 			# open inventory
 			# print("opening inventory")
-			inventory.is_active(true)
+			inventory.open_inventory()
 			pass
 	else:
 		# if the inventory is already open
-		inventory.is_active(false)
+		inventory.close_inventory()
 		# print("closing inventory")
 		pass
 
@@ -97,32 +97,32 @@ func _physics_process(_delta):
 
 func _on_Orion_no_health():
 	dead_npc_names.append("Orion")
-	var npc = $YSort/Orion
+	var npc = $Floor1/YSort/Orion
 	npc.queue_free()
 	
 func _on_Petra_no_health():
 	dead_npc_names.append("Petra")
-	var npc = $YSort/Petra
+	var npc = $Floor1/YSort/Petra
 	npc.queue_free()
 	
 func _on_Aurora_no_health():
 	dead_npc_names.append("Aurora")
-	var npc = $YSort/Aurora
+	var npc = $Floor1/YSort/Aurora
 	npc.queue_free()
 		
 func _on_Borealis_no_health():
 	dead_npc_names.append("Borealis")
-	var npc = $YSort/Borealis
+	var npc = $Floor1/YSort/Borealis
 	npc.queue_free()
 			
 func _on_Mark_no_health():
 	dead_npc_names.append("Mark")
-	var npc = $YSort/Mark
+	var npc = $Floor1/YSort/Mark
 	npc.queue_free()	
 				
 func _on_Oasis_no_health():
 	dead_npc_names.append("Oasis")
-	var npc = $YSort/Oasis
+	var npc = $Floor1/YSort/Oasis
 	npc.queue_free()
 
 
@@ -177,17 +177,17 @@ func sort_ccw(a: Vector2, b: Vector2):
 	if (a.x - extra.x < 0 && b.x - extra.x >= 0): 
 		return false
 	if (a.x - extra.x == 0 && b.x - extra.x == 0): 
-	    if (a.y - extra.y >= 0 || b.y - extra.y >= 0): 
-	        return a.y > b.y
-	    return b.y > a.y
-    
+		if (a.y - extra.y >= 0 || b.y - extra.y >= 0): 
+			return a.y > b.y
+		return b.y > a.y
+	
 
-    # compute the cross product of vectors (extra -> a) x (extra -> b)
+	# compute the cross product of vectors (extra -> a) x (extra -> b)
 	var det = (a.x - extra.x) * (b.y - extra.y) - (b.x - extra.x) * (a.y - extra.y)
 	if (det < 0): 
-	    return true
+		return true
 	if (det > 0): 
-	    return false	
+		return false	
 	# points a and b are on the same line from the center
 	# check which point is closer to the center
 	var d1 = (a.x - extra.x) * (a.x - extra.x) + (a.y - extra.y) * (a.y - extra.y)

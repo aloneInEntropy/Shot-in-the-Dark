@@ -10,14 +10,16 @@ signal game_over
 
 onready var ap = $AnimationPlayer # animation player
 onready var at = $AnimationTree # animation tree
-onready var ast = at.get("parameters/playback") # animation state
 onready var spr = $Sprite # player sprite
 onready var fl = $Flashlight # player flashlight
+onready var intbox = $InteractBox # interaction box
+onready var pickup_audio = $PickupAudio # pickup audio
+onready var fl_audio = $FlashlightAudio # flashlight click audio
 onready var fla = fl.get_node("FlashlightArea") # flashlight area
 onready var flac = fla.get_node("FlashlightCollider") # flashlight collider
-onready var intbox = $InteractBox # interaction box
 onready var world = get_tree().get_root().get_node("World") # world
 onready var gui = world.get_node("GUI") # gui
+onready var ast = at.get("parameters/playback") # animation state
 onready var item_names = world.item_names
 onready var npc_names = world.npc_names
 
@@ -29,16 +31,18 @@ var added_battery_amount = 35 # how much generic battery pickups increase the ba
 
 var can_item_interact = false # is the player in a position where they can interact with an item?
 var can_npc_interact = false # is the player in a position where they can interact with an NPC?
-var is_talking = false
+var is_picking = false # is the player interacting with an item
+var is_talking = false # is the player interacting with an npc
+var flashing = false # is the flashlight on
+var player_npc_cancelled = false
+var at_generator = false
+var fl_toggled = false
 var item_overlapping
 var npc_overlapping
 var player_item_selected
 var player_npc_selected
 var inventory_contents = [] # strings of each inventory item
-var flashing = false
 var npc_item = null
-var player_npc_cancelled = false
-var at_generator = false
 var prev_angle := Vector2()
 
 func _ready():
@@ -86,23 +90,28 @@ func _physics_process(delta):
 				battery_loss_rate_frame = battery_loss_rate
 				flashlight_battery_remaining -= flashlight_battery_loss
 				# print("down: " + str(flashlight_battery_remaining))
-			for item in fla.get_overlapping_areas(): 
-				if "Infection" in item.name:
-					if item.k_countdown <= 0:
-						item.health -= 1
-				pass
+				for item in fla.get_overlapping_areas(): 
+					if "Infection" in item.name:
+						if item.k_countdown <= 0:
+							item.health -= 1
+							pass
 			gui.get_node("FlashlightRemaining").set_battery(flashlight_battery_remaining)
 
 			# if the flashlight is no longer pointing at anything but Z is still held, turn update the text
 			if fla.get_overlapping_areas().size() == 0: 
 				pass
-		
+				
+	if fl_toggled != flashing:
+		fl_audio.play()
+		fl_toggled = flashing
+
 	velocity = move_and_slide(velocity)
 	
 	if can_item_interact:
 		# print("here")
 		if item_overlapping.has_item:
 			if Input.get_action_strength("ui_pick_up") != 0:
+				pickup_audio.play()
 				if item_overlapping.proper_name == "Batteries":
 					# add to battery
 					flashlight_battery_remaining = min(100, flashlight_battery_remaining + added_battery_amount)
@@ -116,25 +125,35 @@ func _physics_process(delta):
 				else:
 					# world.spawn_positions_used.erase(item_overlapping.position)
 					player_item_selected = item_overlapping
-					world.inventory.is_active(true)
+					is_picking = true
 					world.inventory.held_item = player_item_selected
+					world.inventory.open_inventory()
+	else:
+		is_picking = false
+
+	if at_generator:
+		if Input.get_action_strength("ui_pick_up") != 0:
+			world.inventory.open_inventory()
+		# world.inventory.held_item = player_item_selected
+
 	# else:
 	# 	gui.get_node("Label").text = ""
 	
 	if can_npc_interact:
 		if Input.get_action_strength("ui_pick_up") != 0:
+			at_generator = false
+			is_picking = false
+
 			player_npc_selected = npc_overlapping
 			is_talking = true
-			world.inventory.is_active(true)
-			# now, the player has either the chosen item, or nothing
+			print(is_picking)
+			world.inventory.open_inventory()
 
+			# now, the player has either the chosen item, or nothing
 			if npc_item and !player_npc_cancelled:
-				player_npc_selected.receive_item(npc_item)
-		else:
-			# gui.get_node("Label").text = ""
-			pass
-	# else:
-	# 	gui.get_node("Label").text = ""
+				player_npc_selected.get_parent().receive_item(npc_item)
+	else:
+		is_talking = false
 
 	battery_loss_rate_frame -= 1
 	# update()
@@ -152,6 +171,7 @@ func _on_Hurtbox_area_entered(area:Area2D):
 
 
 func _on_InteractBox_area_entered(area:Area2D):
+	# print("entering %s" % area.name)
 	var item_name = ""
 	if area.name == "Generator":
 		at_generator = true
@@ -170,6 +190,7 @@ func _on_InteractBox_area_entered(area:Area2D):
 		
 		
 func _on_InteractBox_area_exited(area:Area2D):
+	# print("leaving %s" % area.name)
 	var item_name = ""
 	if area.name == "Generator":
 		at_generator = false
@@ -178,27 +199,10 @@ func _on_InteractBox_area_exited(area:Area2D):
 	else:	
 		item_name = area.name
 	# print("left " + item_name)
-	if item_name in item_names:
+	if item_name in item_names or ("has_item" in area and !area.has_item):
 		can_item_interact = false
 		item_overlapping = null
 	elif item_name in npc_names:
 		can_npc_interact = false
 		npc_overlapping = null
-
-# func strip_instanciated_chars(phrase):
-# 	if "@" in phrase:
-# 		phrase = phrase.substr(1, phrase.length()-1)
-# 	phrase.rstrip("0123456789")
-# 	return phrase
-
-
-# https://stackoverflow.com/a/14382692
-# check if point `p` is inside triangle with points `v1`, `v2`, and `v3`
-func inside_tri(p: Vector2, v1: Vector2, v2: Vector2, v3: Vector2) -> bool:
-	var area := 0.5 *(-v2.y*v3.x + v1.y*(-v2.x + v3.x) + v1.x*(v2.y - v3.y) + v2.x*v3.y)
-	var s := 1/(2*area)*(v1.y*v3.x - v1.x*v3.y + (v3.y - v1.y)*p.x + (v1.x - v3.x)*p.y)
-	var t := 1/(2*area)*(v1.x*v2.y - v1.y*v2.x + (v1.y - v2.y)*p.x + (v2.x - v1.x)*p.y)
-
-	return s >= 0 and t >= 0 and (1-s-t) >= 0
-
 

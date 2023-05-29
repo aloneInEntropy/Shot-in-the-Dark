@@ -1,6 +1,6 @@
 extends ColorRect
 
-onready var world = get_tree().get_root().get_node("World")
+# onready var world = get_tree().get_root().get_node("World")
 # onready var welcome_screen = world.gui.get_node("Welcome")
 
 onready var rtl = $WinOrLose

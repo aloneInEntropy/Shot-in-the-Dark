@@ -1,6 +1,6 @@
 extends Control
 
-onready var world = get_tree().get_root().get_node("World")
+# onready var world = get_tree().get_root().get_node("World").get_parent()
 
 func _ready():
 	get_tree().paused = true

@@ -4,8 +4,9 @@ onready var sprite = $Sprite
 onready var timer = $Timer
 var rng = RandomNumberGenerator.new()
 var proper_name
+var has_item
 # names of items, with duplicate names to mock probability
-var item_names = ["Bread", "Batteries", "Cupcake", "Sweet", "MetalParts", "WaterBottle", "Chicken", "Batteries", "Batteries"] 
+var item_names = ["Bread", "Batteries", "Cupcake", "Sweet", "MetalParts", "WaterBottle", "Chicken", "Batteries"] 
 
 """textures"""
 var bread_texture = preload("res://Assets/Items/Sprites/bread.png") # bread texture
@@ -17,7 +18,6 @@ var water_texture = preload("res://Assets/Items/Sprites/water-bottle.png") # wat
 var chicken_texture = preload("res://Assets/Items/Sprites/chicken.png") # chicken texture
 var empty_texture = preload("res://Assets/Items/Sprites/Empty.png") # empty texture
 
-var has_item
 
 func _ready():
 	rng.randomize()
@@ -49,8 +49,8 @@ func loadTexture(texture_name: String):
 
 func _on_Timer_timeout():
 	loadRandomItem()
-	# print("spawned item")
-
+	
+# take the item in this item holder
 func takeItem():
 	has_item = false
 	proper_name = "EMPTY"

@@ -6,7 +6,7 @@ onready var extra_item_outline = $ExtraItemOutline
 onready var temp_item = $TempItem
 onready var inventory = preload("res://Assets/Items/Inventory.tres")
 onready var world = get_tree().get_root().get_node("World")
-onready var player = get_tree().get_root().get_node("World/YSort/Player")
+onready var player = get_tree().get_root().get_node("World/Player")
 
 onready var bread_instance = preload("res://Assets/Items/Bread.tres")
 onready var cupcake_instance = preload("res://Assets/Items/Cupcake.tres")
@@ -35,78 +35,96 @@ func _ready():
 	temp_item.position = aux_position
 
 func _process(_delta):
-	selected_item = inventory.items[player_index]
+	if is_inventory_active:
+		selected_item = inventory.items[player_index]
 
-	if movement_frames_left <= 0:
-		if (Input.get_action_strength("ui_right") != 0):
-			if player_index < index_hi:
-				player_index += 1
-				movement_frames_left = movement_cooldown
-					
-		elif (Input.get_action_strength("ui_left") != 0):
-			if player_index > index_lo:
-				player_index -= 1
-				movement_frames_left = movement_cooldown
-				# print(player_index)
+		if movement_frames_left <= 0:
+			if (Input.get_action_strength("ui_right") != 0):
+				if player_index < index_hi:
+					player_index += 1
+					movement_frames_left = movement_cooldown
+						
+			elif (Input.get_action_strength("ui_left") != 0):
+				if player_index > index_lo:
+					player_index -= 1
+					movement_frames_left = movement_cooldown
+					# print(player_index)
+			else:
+				movement_frames_left = -1 # prevent frames left from getting too low and causing an underflow error
+				
+		item_outline.position = selection_positions[player_index]
+		movement_frames_left -= 1
+
+		if held_item == null:
+			temp_item.texture = null
 		else:
-			movement_frames_left = -1 # prevent frames left from getting too low and causing an underflow error
-			
-	item_outline.position = selection_positions[player_index]
-	movement_frames_left -= 1
+			temp_item.texture = held_item.get_node("Sprite").texture
 
-	if held_item == null:
-		temp_item.texture = null
-	else:
-		temp_item.texture = held_item.get_node("Sprite").texture
-
-	if Input.get_action_strength("ui_cancel") != 0:
-		# close inventory
-		if held_item:
-			# held_item.queue_free()
-			held_item = null
-		elif player.is_talking:
-			# if the player is talking to an NPC but leaves without giving them anything, don't change the inventory
-			player.is_talking = false
-			pass
-		is_active(false)
-		get_tree().get_root().get_node("World").is_inventory_open = false
-	
-	if Input.get_action_strength("ui_accept") != 0:
-		if held_item and held_item.has_item:
-			# take item
-			inventory.set_item(player_index, load("res://Assets/Items/" + held_item.proper_name + ".tres"))
-			print("accepting: " + held_item.proper_name)
-			held_item.takeItem()
-			# held_item.queue_free()
-			# held_item = null
-			# print(inventory.items)
+		if Input.get_action_strength("ui_cancel") != 0:
 			# close inventory
-			is_active(false)
-			get_tree().get_root().get_node("World").is_inventory_open = false
-		elif player.is_talking:
-			# give item
-			# if the player can interact and they open the inventory
-			player.npc_item = inventory.remove_item(player_index)
-			player.player_npc_cancelled = false
-			# close inventory
-			is_active(false)
-			get_tree().get_root().get_node("World").is_inventory_open = false
-			pass
-		elif player.at_generator:
-			# drop (use) selected item on generator
-			if inventory.items[player_index]:
-				if inventory.items[player_index].name == "Metal Parts":
-					inventory.remove_item(player_index)
-					world.generator.parts_obtained += 1
-					# print(world.generator.parts_obtained)
-					# close inventory
-					is_active(false)
-					get_tree().get_root().get_node("World").is_inventory_open = false
-			pass
-			
-
+			if held_item:
+				# held_item.queue_free()
+				held_item = null
+			elif player.is_talking:
+				# if the player is talking to an NPC but leaves without giving them anything, don't change the inventory
+				player.is_talking = false
+				player.npc_item = false
+				player.player_npc_cancelled = true
+				pass
+			# is_active(false)
+			# get_tree().get_root().get_node("World").is_inventory_open = false
+			close_inventory()
+		
+		if Input.get_action_strength("ui_accept") != 0:
+			# if held_item and held_item.has_item:
+			# picking up item
+			if player.is_picking:
+				# take item
+				inventory.set_item(player_index, load("res://Assets/Items/" + held_item.proper_name + ".tres"))
+				print("accepting: " + held_item.proper_name)
+				held_item.takeItem()
+				print("kjjljknjkhjcc")
+				held_item = null
+			# giving item away
+			elif player.is_talking:
+				# give item
+				# if the player can interact and they open the inventory
+				player.npc_item = inventory.pop_item(player_index)
+				player.player_npc_cancelled = false
+				# close inventory
+				# is_active(false)
+				# get_tree().get_root().get_node("World").is_inventory_open = false
+				# close_inventory()
+				pass
+			elif player.at_generator:
+				# drop (use) selected item on generator
+				if inventory.items[player_index]:
+					if inventory.items[player_index].name == "Metal Parts":
+						inventory.pop_item(player_index)
+						world.generator.parts_obtained += 1
+						# print(world.generator.parts_obtained)
+						# close inventory
+						# is_active(false)
+						# get_tree().get_root().get_node("World").is_inventory_open = false
+						pass
+					else:
+						print("the generator can't accept this! (%s)" % inventory.items[player_index])
+			else:
+				print("player accepted " + str(held_item) + " at unknown location")
+			close_inventory()
+						
+						
 func is_active(value):
 	is_inventory_active = value
-	get_tree().paused = is_inventory_active
-	visible = is_inventory_active
+	get_tree().paused = value
+	visible = value
 
+
+func open_inventory():
+	is_active(true)
+	get_tree().get_root().get_node("World").is_inventory_open = true
+
+
+func close_inventory():
+	is_active(false)
+	get_tree().get_root().get_node("World").is_inventory_open = false

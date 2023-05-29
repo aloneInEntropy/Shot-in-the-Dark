@@ -3,9 +3,10 @@ extends Area2D
 # onready variables
 # onready var infection = preload("res://Scenes/Infection.tscn") # get the infection instance
 onready var world = get_tree().get_root().get_node_or_null("World")
-onready var player = world.get_node_or_null("YSort/Player") if world else null
+onready var player = world.get_node_or_null("Player") if world else null
 onready var infection_tiles = get_node("EnemyTileMap")
 onready var timer = $Timer
+onready var audio_player = $AudioPlayer
 
 # arrays
 var points := PoolVector2Array() # all points
@@ -19,6 +20,9 @@ export var POINT_LIMIT := 300 # maximum number of points allowed for an individu
 export var gap := 16
 export var grid_interval := 1
 export var maxClosestPoints := 64
+var centre_point := Vector2()
+var closest_point := Vector2(2000, 2000) # closest point to player
+var closest_dist := 10000 # closest distance to player
 var rng := RandomNumberGenerator.new()
 var target := Vector2()
 var rLowerBound := 5
@@ -55,7 +59,7 @@ func _process(_delta):
 	frame += 1
 	checkDeath()
 	if can_spread:
-		# update()
+		update()
 
 		op = checkBoundary(points, op, gap)
 		points.append_array(op)
@@ -82,7 +86,10 @@ func _process(_delta):
 			# 	!inners.has(p) and
 			# 	!op.has(p)):
 			# 		inners.append(p)
-			
+			var tdist = p.distance_to(player.global_position)
+			if tdist < closest_dist:
+				closest_dist = tdist
+				closest_point = p
 			placeTile(p, 1)
 			if roundToN(target, gap).is_equal_approx(p):
 				grid_interval = 10000
@@ -97,9 +104,11 @@ func _process(_delta):
 				for d in res:
 					if d["collider"] == player.fla:
 						removePoint(p)
-						pass
-		
-
+						
+		centre_point /= Vector2(points.size(), points.size()) # get the average position of all points
+		# audio_player.global_position = closest_point - position
+		# audio_player.play()
+						
 		if checkInside(target, points):
 			# print(inners.has(Vector2(stepify(target.x, gap), stepify(target.y, gap))))
 			print("DIED " + str(Vector2(stepify(target.x, gap), stepify(target.y, gap))) + " " + str(rng.randi()))
@@ -109,7 +118,6 @@ func _process(_delta):
 			grid_interval = pgi
 
 		closest = findClosestPoints(op, target, maxClosestPoints)
-		
 		op = PoolVector2Array() # clear
 		
 
@@ -118,6 +126,7 @@ func _physics_process(_delta):
 
 
 func _draw():
+	draw_circle(closest_point - position, 10, Color8(0, 255, 0))	
 	# draw_circle(target - position, 10, Color8(0, 255, 0))	
 	# for p in points:
 	# 	draw_circle(p - position, 2, Color8(255, 255, 255))

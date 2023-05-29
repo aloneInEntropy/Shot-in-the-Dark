@@ -47,13 +47,16 @@ func stop_anim():
 	anim.stop()
 	coll.disabled = false
 
-func recieve_item(item):
-	if item == "Bread" or item == "Water":
+func receive_item(item):
+	var item_name = item.name
+	if item_name == "Bread" or item_name == "Water":
 		health += 15
-	elif item == "Sweet" and name == "Orion":
+	elif item_name in ["Sweet", "Cupcake"] and name == "Orion":
 		health -= 15
-	elif item == "Chicken" and name == "Aurora":
+	elif item_name == "Chicken" and name == "Aurora":
 		health -= 15
-	elif item == "Cupcake" and name == "Borealis":
+	elif item_name == "Cupcake" and name == "Borealis":
 		health -= 15
+	else:
+		print(name + " got something they don't understand (" + item_name + ")")
 	pass

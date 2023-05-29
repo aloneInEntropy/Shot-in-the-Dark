@@ -1,6 +1,6 @@
 extends Area2D
 
-var health = 3
+var health = 1
 var rng = RandomNumberGenerator.new()
 var infection_inst
 var spread_dir
