@@ -4,7 +4,7 @@ extends Area2D
 # onready var infection = preload("res://Scenes/Infection.tscn") # get the infection instance
 onready var world = get_tree().get_root().get_node_or_null("World")
 onready var player = world.get_node_or_null("Player") if world else null
-onready var infection_tiles = get_node("EnemyTileMap")
+onready var infection_tiles = $EnemyTileMap
 onready var timer = $Timer
 onready var audio_player = $AudioPlayer
 
@@ -16,10 +16,10 @@ var closest := PoolVector2Array() # closest boundary points
 var invalids := PoolVector2Array() # all points not allowed to spread to
 
 # variables
-export var POINT_LIMIT := 300 # maximum number of points allowed for an individual spreader
-export var gap := 16
+export var POINT_LIMIT := 1000 # maximum number of points allowed for an individual spreader
 export var grid_interval := 1
 export var maxClosestPoints := 64
+var gap := 16
 var centre_point := Vector2()
 var closest_point := Vector2(2000, 2000) # closest point to player
 var closest_dist := 10000 # closest distance to player
@@ -97,13 +97,17 @@ func _process(_delta):
 				grid_interval = pgi
 
 			
-			if player and player.flashing:
-				# get all areas intersecting with the current point on collision layer 2
-				# (doesn't seem to care about the collision layer, so be careful)
-				var res = get_world_2d().get_direct_space_state().intersect_point(p, 32, [], 2, false, true)
-				for d in res:
+			var res = get_world_2d().get_direct_space_state().intersect_point(p, 32, [], 2, false, true)
+			for d in res:
+				if player and player.flashing:
+					# get all areas intersecting with the current point on collision layer 2
+					# (doesn't seem to care about the collision layer, so be careful)
 					if d["collider"] == player.fla:
 						removePoint(p)
+				if d["collider"].is_in_group("light_bullets"):
+					for pp in d["collider"].pattern:
+						removePoint(p+pp)
+						# print(pp)
 						
 		centre_point /= Vector2(points.size(), points.size()) # get the average position of all points
 		# audio_player.global_position = closest_point - position
@@ -363,7 +367,7 @@ func getGridInterval():
 func setGridInterval(s: int):
 	pgi = s
 	grid_interval = s
-	frame = s
+	# frame = s
 
 
 # get an array of all points not allowed to be spread to
@@ -445,8 +449,8 @@ func removePoint(v: Vector2):
 			stepify((v.y-global_position.y), gap)/infection_tiles.cell_quadrant_size,
 			-1
 		)
-		world.temp_invalids.append(v)
-		# print(v)
+		# start a frame timer for the removed point so it can't be spread to until the timer finishes
+		world.temp_invalids[v] = world.temp_invalid_removal_countdown 
 
 func checkDeath():
 	if points.size() == 0:

@@ -2,17 +2,17 @@ extends Node2D
 
 # onready var cutscene_player = $CutscenePlayer
 # onready var cts1 = $Cutscenes/cutscene_trigger_1
+# onready var hallway_tiles := $Floor1/HallwayTileMap
 onready var item_spawn_container = $Floor1/ItemSpawnPositions
-onready var inventory = $GUI/InventoryContainer
-onready var gui = $GUI
 onready var player = $Player # player
+onready var infection_light := $Player/InfectionLight
+onready var gui = $GUI
+onready var inventory = $GUI/InventoryContainer
 onready var player_flashlight = $GUI/FlashlightRemaining
 onready var generator = $Floor1/YSort/Generator
-onready var hallway_tiles := $Floor1/HallwayTileMap
-onready var infection_light := $Player/InfectionLight
 var item_spawner = load("res://Scenes/Item.tscn")
 var rng = RandomNumberGenerator.new()
-
+var gap := 16
 var cutscenes_played = []
 var spawn_positions = PoolVector2Array([
 	Vector2(-328, -305), Vector2(248, -241), Vector2(-640, 78), Vector2(-760, -234), Vector2(-736, -458), Vector2(-776, -914), Vector2(88, -818), Vector2(96, -610), Vector2(-128, 102), Vector2(240, -194), Vector2(-168, -1090)
@@ -25,8 +25,10 @@ var npc_names = ["Orion", "Petra", "Oasis", "Aurora", "Borealis", "Mark"]
 var dead_npc_names = []
 var is_inventory_open = false # is the inventory open
 var inf_points = [] # all infection tile points
-var temp_invalids = [] # all invalid points
-var temp_invalid_removal_countdown := 240 # wait 240 frames (4 secs) before spreading to invalid points
+var temp_invalids = {} # all invalid points as keys, and their respective timers as values
+var illegal = [] # all illegal points, that infection is never allowed to spread to
+var light_illegal = [] # all illegal light areas, that light bullets are destroyed upon touching
+export var temp_invalid_removal_countdown := 240 # wait 240 frames (2 secs) before spreading to invalid points
 var temp_invalid_removal_countdown_rate := temp_invalid_removal_countdown
 var extra # extra temporary info for general tasks
 
@@ -45,23 +47,29 @@ func _draw():
 	# 	draw_circle(p, 5, Color8(255, 0, 0))
 	pass
 	
-func _process(delta):
-	if temp_invalid_removal_countdown_rate <= 0:
-		temp_invalids = PoolVector2Array()
-		temp_invalid_removal_countdown_rate = temp_invalid_removal_countdown
+func _process(_delta):
+	# if temp_invalid_removal_countdown_rate <= 0:
+	# 	print("can spread to this point again again")
+	# 	temp_invalids = PoolVector2Array()
+	# 	temp_invalid_removal_countdown_rate = temp_invalid_removal_countdown
 	# -------------------------------------------- spread control -------------------------------------------- #
 	# var state = get_world_2d().direct_space_state
 	for s in get_tree().get_nodes_in_group("spreaders"):
 		s.setTarget(player.global_position)
 		if !s.isSpreading():
-			s.setGridInterval(16)
-			s.setMaxClosestPoints(32)
+			s.setGridInterval(20)
+			s.setMaxClosestPoints(128)
 			s.startSpread()
 		# inf_points.append_array(s.getPoints())
 	
-	temp_invalid_removal_countdown_rate -= 1 * delta
+	# temp_invalid_removal_countdown_rate -= 1
 	# update()
-	pass
+
+	for p in temp_invalids.keys():
+		temp_invalids[p] -= 1
+		if temp_invalids[p] <= 0:
+			temp_invalids.erase(p)
+			# print("freed point: " + str(p))
 
 func _physics_process(_delta):
 	if !is_inventory_open:
@@ -158,39 +166,3 @@ func _on_Player_game_over():
 	get_tree().paused = true
 	player_flashlight.visible = false
 	pass
-""" 
-func cwsort(pts: PoolVector2Array):
-	var p = Array(pts)
-	var centre := Vector2()
-	for pt in pts:
-		centre.x += pt.x
-		centre.y += pt.y
-	centre.x /= pts.size()
-	centre.y /= pts.size()
-	extra = centre
-	p.sort_custom(self, "sort_ccw")
-	return p
-
-func sort_ccw(a: Vector2, b: Vector2):
-	if (a.x - extra.x >= 0 && b.x - extra.x < 0): 
-		return true
-	if (a.x - extra.x < 0 && b.x - extra.x >= 0): 
-		return false
-	if (a.x - extra.x == 0 && b.x - extra.x == 0): 
-		if (a.y - extra.y >= 0 || b.y - extra.y >= 0): 
-			return a.y > b.y
-		return b.y > a.y
-	
-
-	# compute the cross product of vectors (extra -> a) x (extra -> b)
-	var det = (a.x - extra.x) * (b.y - extra.y) - (b.x - extra.x) * (a.y - extra.y)
-	if (det < 0): 
-		return true
-	if (det > 0): 
-		return false	
-	# points a and b are on the same line from the center
-	# check which point is closer to the center
-	var d1 = (a.x - extra.x) * (a.x - extra.x) + (a.y - extra.y) * (a.y - extra.y)
-	var d2 = (b.x - extra.x) * (b.x - extra.x) + (b.y - extra.y) * (b.y - extra.y)
-	return d1 > d2;
- """

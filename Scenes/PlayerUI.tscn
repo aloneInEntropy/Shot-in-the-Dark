@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://Scripts/PlayerUI.gd" type="Script" id=1]
 [ext_resource path="res://Scenes/new_theme.tres" type="Theme" id=2]
+[ext_resource path="res://Assets/FlashlightIconOff.png" type="Texture" id=3]
+[ext_resource path="res://NPC/LightTexture_flat_white_16.png" type="Texture" id=4]
 
 [node name="PlayerUI" type="Control"]
 anchor_right = 1.0
@@ -15,11 +17,37 @@ margin_bottom = 14.0
 [node name="ProgressBar" type="ProgressBar" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = 8.0
-margin_top = 8.0
-margin_right = -256.0
-margin_bottom = -154.0
+margin_left = 10.0
+margin_top = 16.0
+margin_right = -289.0
+margin_bottom = -160.0
+rect_scale = Vector2( 1, 0.5 )
 theme = ExtResource( 2 )
 value = 50.0
 rounded = true
 percent_visible = false
+
+[node name="FlashlightIcon" type="TextureRect" parent="."]
+margin_left = 3.0
+margin_top = 2.0
+margin_right = 39.0
+margin_bottom = 17.0
+texture = ExtResource( 3 )
+expand = true
+
+[node name="TextureRect" type="TextureRect" parent="."]
+show_behind_parent = true
+margin_right = 40.0
+margin_bottom = 21.0
+texture = ExtResource( 4 )
+expand = true
+
+[node name="TextureRect2" type="TextureRect" parent="."]
+modulate = Color( 0.168627, 0.164706, 0.164706, 1 )
+show_behind_parent = true
+margin_left = 1.0
+margin_top = 1.0
+margin_right = 39.0
+margin_bottom = 20.0
+texture = ExtResource( 4 )
+expand = true

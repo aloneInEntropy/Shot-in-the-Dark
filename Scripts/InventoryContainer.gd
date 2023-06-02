@@ -83,7 +83,6 @@ func _process(_delta):
 				inventory.set_item(player_index, load("res://Assets/Items/" + held_item.proper_name + ".tres"))
 				print("accepting: " + held_item.proper_name)
 				held_item.takeItem()
-				print("kjjljknjkhjcc")
 				held_item = null
 			# giving item away
 			elif player.is_talking:

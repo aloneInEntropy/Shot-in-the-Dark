@@ -6,7 +6,9 @@ onready var anim = $AnimationPlayer
 onready var sprite = $Sprite
 onready var coll = $CollisionShape2D
 onready var intbox = $InteractBox
+onready var world = get_tree().get_root().get_node_or_null("World")
 
+var pattern := PoolVector2Array() # light bullet pattern
 var health_loss_rate = 120 # frames to pass before losing 1 health
 var health_loss_frame = health_loss_rate
 export var max_health = 100
@@ -16,6 +18,10 @@ func _ready():
 	# print(global_position)
 	if name == "Orion":
 		sprite.texture = load("res://Assets/Spritesheets/orion.png")
+		pattern.append(Vector2(0, 0))
+		pattern.append(Vector2(world.gap, 0))
+		pattern.append(Vector2(-world.gap, 0))
+		pattern.append(Vector2(0, world.gap))
 	elif name == "Petra":
 		sprite.texture = load("res://Assets/Spritesheets/petra.png")
 	elif name == "Oasis":

@@ -9,7 +9,6 @@
 layer = 5
 
 [node name="FlashlightRemaining" parent="." instance=ExtResource( 2 )]
-visible = false
 
 [node name="InventoryContainer" parent="." instance=ExtResource( 1 )]
 visible = false
@@ -18,6 +17,7 @@ visible = false
 visible = false
 
 [node name="Welcome" parent="." instance=ExtResource( 4 )]
+visible = false
 
 [node name="Label1" type="Label" parent="."]
 margin_right = 40.0

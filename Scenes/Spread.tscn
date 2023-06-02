@@ -59,6 +59,7 @@ extents = Vector2( 8, 8 )
 0/z_index = 0
 
 [node name="Spread" type="Area2D" groups=["spreaders"]]
+collision_layer = 2
 script = ExtResource( 1 )
 
 [node name="Sprite2" type="Sprite" parent="."]

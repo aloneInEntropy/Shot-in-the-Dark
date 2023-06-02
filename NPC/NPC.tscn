@@ -298,3 +298,10 @@ collision_mask = 2
 [node name="CollisionShape2D" type="CollisionShape2D" parent="InteractBox"]
 position = Vector2( 0, -8 )
 shape = SubResource( 46 )
+
+[node name="NPCGlow" type="Light2D" parent="."]
+position = Vector2( 0, -8 )
+texture = ExtResource( 3 )
+texture_scale = 0.5
+color = Color( 0.670588, 0.607843, 0.32549, 1 )
+energy = 0.33

@@ -327,7 +327,7 @@ position = Vector2( 0, -8 )
 texture = ExtResource( 2 )
 hframes = 4
 vframes = 3
-frame = 1
+frame = 6
 
 [node name="Collider" type="CollisionShape2D" parent="."]
 rotation = -1.5708
@@ -389,6 +389,11 @@ shape = SubResource( 48 )
 position = Vector2( 0, -8 )
 texture = ExtResource( 3 )
 texture_scale = 0.5
+color = Color( 0.670588, 0.607843, 0.32549, 1 )
+
+[node name="PlayerGlow2" type="Light2D" parent="."]
+position = Vector2( 0, -8 )
+texture = ExtResource( 3 )
 color = Color( 0.670588, 0.607843, 0.32549, 1 )
 
 [node name="FootstepAudioPlayer" type="AudioStreamPlayer2D" parent="."]

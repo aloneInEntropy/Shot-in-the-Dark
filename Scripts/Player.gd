@@ -19,6 +19,7 @@ onready var fla = fl.get_node("FlashlightArea") # flashlight area
 onready var flac = fla.get_node("FlashlightCollider") # flashlight collider
 onready var world = get_tree().get_root().get_node("World") # world
 onready var gui = world.get_node("GUI") # gui
+onready var player_ui = gui.get_node("FlashlightRemaining")
 onready var ast = at.get("parameters/playback") # animation state
 onready var item_names = world.item_names
 onready var npc_names = world.npc_names
@@ -74,7 +75,7 @@ func _physics_process(delta):
 	# fl.look_at(global_transform.origin + velocity) last one was changed for some reason. this is the correct line.
 	fl.look_at(global_transform.origin + velocity) # rotates the flashlight to look at the player's last velocity.
 	fl.rotation_degrees = wrapf(fl.rotation_degrees, 0, 360.0) # wrap rotation between 0 and 360
-
+	
 	# if the flash key (Z) is pressed, toggle the flashlight's visibility
 	if (Input.get_action_strength("ui_flash") == 0) or flashlight_battery_remaining == 0:
 		fl.visible = false
@@ -105,6 +106,8 @@ func _physics_process(delta):
 		fl_audio.play()
 		fl_toggled = flashing
 
+	player_ui.set_flashlight_icon(flashing)
+	
 	velocity = move_and_slide(velocity)
 	
 	if can_item_interact:
