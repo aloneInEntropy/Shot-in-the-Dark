@@ -116,12 +116,17 @@ He shines lights with a radius of 3 tiles. When his glasses are freshly cleaned,
 ### Dr Oasis
 Andy Oasis (PhD) can be found in the chemical storage room, high on something. A clean freak, Oasis is an extreme germaphobe and benefits from more personal space than others, as well as soap they can wash their hands with (but with what water?).
 
+
 Indonesian, darker skin than Petra and lighter skin than Bee. They have short green hair. Wearing goggles, a large white lab coat, black trousers, and a greyish-purple turtleneck.
 #### Mechanics
 They can always shine four light projectiles at once, at a rate of 75% (25% slower than standard). They require one block of space surrounding them at all times.
 
+When given water to clean themselves, they shoot 25% faster for 10 seconds.
+
 ### Aurora and Borealis Johnstone
-Aurora and Borealis are the twin sisters of the school, hidden in two different computer halls. Aurora is a professional e-sports player, whereas Borealis is a master hacker. As there is very little electricity available, neither sister has particularly useful skills here. Aurora is a vegan and can’t eat meat. Borealis isn’t a vegan but has severe allergies to several foods, including dairy. They are both ADHD and tend to wander off, so you have to lure them back 
+Aurora and Borealis are the twin sisters of the school, hidden in two different computer halls. Aurora is a professional e-sports player, whereas Borealis is a master hacker. As there is very little electricity available, neither sister has particularly useful skills here. 
+
+Aurora is a vegan and can’t eat meat. Borealis isn’t a vegan but has severe allergies to several foods, including dairy. They are both ADHD and tend to wander off, so you have to lure them back 
 
 Aurora has dyed her hair red. She wears a blue t-shirt.
 Borealis has dyed her hair blue. She wears a red t-shirt.

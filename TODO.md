@@ -12,7 +12,7 @@
 - [x] Add shooting "light bullets"
 - [ ] Add light barriers (light cannot go past barriers)
 - [ ] Change player flashlight to use raycasts instead of an area
-- [ ] Re-implement NPC scenes using inheritance
+- [x] Re-implement NPC scenes using inheritance
 - [ ] Dummy/invalid points: points not allowed to be spread to
 - [ ] Better pathfinding (BFS, A*, etc.) while keeping randomness
 

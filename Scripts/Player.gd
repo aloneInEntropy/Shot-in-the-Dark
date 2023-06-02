@@ -151,10 +151,10 @@ func _physics_process(delta):
 			is_talking = true
 			print(is_picking)
 			world.inventory.open_inventory()
-
+			# print("inv closed; doing npc stuff")
 			# now, the player has either the chosen item, or nothing
-			if npc_item and !player_npc_cancelled:
-				player_npc_selected.get_parent().receive_item(npc_item)
+			# if npc_item and !player_npc_cancelled:
+			# 	player_npc_selected.get_parent().receive_item(npc_item)
 	else:
 		is_talking = false
 

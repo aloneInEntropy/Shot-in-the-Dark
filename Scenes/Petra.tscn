@@ -1,0 +1,7 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://Scripts/NPC_Petra.gd" type="Script" id=1]
+[ext_resource path="res://Scenes/NPC.tscn" type="PackedScene" id=2]
+
+[node name="Petra" instance=ExtResource( 2 )]
+script = ExtResource( 1 )

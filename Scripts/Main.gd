@@ -103,35 +103,35 @@ func _physics_process(_delta):
 # 	# otherwise, cutscene has already played.
 
 
-func _on_Orion_no_health():
-	dead_npc_names.append("Orion")
-	var npc = $Floor1/YSort/Orion
-	npc.queue_free()
+# func _on_Orion_no_health():
+# 	dead_npc_names.append("Orion")
+# 	var npc = $Floor1/YSort/Orion
+# 	npc.queue_free()
 	
-func _on_Petra_no_health():
-	dead_npc_names.append("Petra")
-	var npc = $Floor1/YSort/Petra
-	npc.queue_free()
+# func _on_Petra_no_health():
+# 	dead_npc_names.append("Petra")
+# 	var npc = $Floor1/YSort/Petra
+# 	npc.queue_free()
 	
-func _on_Aurora_no_health():
-	dead_npc_names.append("Aurora")
-	var npc = $Floor1/YSort/Aurora
-	npc.queue_free()
+# func _on_Aurora_no_health():
+# 	dead_npc_names.append("Aurora")
+# 	var npc = $Floor1/YSort/Aurora
+# 	npc.queue_free()
 		
-func _on_Borealis_no_health():
-	dead_npc_names.append("Borealis")
-	var npc = $Floor1/YSort/Borealis
-	npc.queue_free()
+# func _on_Borealis_no_health():
+# 	dead_npc_names.append("Borealis")
+# 	var npc = $Floor1/YSort/Borealis
+# 	npc.queue_free()
 			
-func _on_Mark_no_health():
-	dead_npc_names.append("Mark")
-	var npc = $Floor1/YSort/Mark
-	npc.queue_free()	
+# func _on_Mark_no_health():
+# 	dead_npc_names.append("Mark")
+# 	var npc = $Floor1/YSort/Mark
+# 	npc.queue_free()	
 				
-func _on_Oasis_no_health():
-	dead_npc_names.append("Oasis")
-	var npc = $Floor1/YSort/Oasis
-	npc.queue_free()
+# func _on_Oasis_no_health():
+# 	dead_npc_names.append("Oasis")
+# 	var npc = $Floor1/YSort/Oasis
+# 	npc.queue_free()
 
 
 func _on_Generator_game_over():

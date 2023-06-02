@@ -63,16 +63,12 @@ func _process(_delta):
 		if Input.get_action_strength("ui_cancel") != 0:
 			# close inventory
 			if held_item:
-				# held_item.queue_free()
 				held_item = null
 			elif player.is_talking:
 				# if the player is talking to an NPC but leaves without giving them anything, don't change the inventory
 				player.is_talking = false
 				player.npc_item = false
 				player.player_npc_cancelled = true
-				pass
-			# is_active(false)
-			# get_tree().get_root().get_node("World").is_inventory_open = false
 			close_inventory()
 		
 		if Input.get_action_strength("ui_accept") != 0:
@@ -89,27 +85,21 @@ func _process(_delta):
 				# give item
 				# if the player can interact and they open the inventory
 				player.npc_item = inventory.pop_item(player_index)
+				player.player_npc_selected.get_parent().receive_item(player.npc_item)
 				player.player_npc_cancelled = false
-				# close inventory
-				# is_active(false)
-				# get_tree().get_root().get_node("World").is_inventory_open = false
-				# close_inventory()
-				pass
 			elif player.at_generator:
 				# drop (use) selected item on generator
 				if inventory.items[player_index]:
 					if inventory.items[player_index].name == "Metal Parts":
 						inventory.pop_item(player_index)
 						world.generator.parts_obtained += 1
-						# print(world.generator.parts_obtained)
 						# close inventory
-						# is_active(false)
-						# get_tree().get_root().get_node("World").is_inventory_open = false
-						pass
 					else:
 						print("the generator can't accept this! (%s)" % inventory.items[player_index])
 			else:
 				print("player accepted " + str(held_item) + " at unknown location")
+			
+			print("closing inv now")
 			close_inventory()
 						
 						

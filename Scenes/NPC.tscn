@@ -305,3 +305,8 @@ texture = ExtResource( 3 )
 texture_scale = 0.5
 color = Color( 0.670588, 0.607843, 0.32549, 1 )
 energy = 0.33
+
+[node name="PowerupTimer" type="Timer" parent="."]
+
+[connection signal="no_health" from="." to="." method="_on_NPC_no_health"]
+[connection signal="timeout" from="PowerupTimer" to="." method="_on_PowerupTimer_timeout"]
