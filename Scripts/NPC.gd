@@ -77,3 +77,4 @@ func _on_PowerupTimer_timeout():
 
 func _on_NPC_no_health():
 	print("%s died!" % name)
+	queue_free()

@@ -24,7 +24,7 @@ var centre_point := Vector2()
 var closest_point := Vector2(2000, 2000) # closest point to player
 var closest_dist := 10000 # closest distance to player
 var rng := RandomNumberGenerator.new()
-var target := Vector2()
+export var target := Vector2()
 var rLowerBound := 5
 var rMiddleBound := 10
 var rUpperBound := 100
@@ -59,7 +59,7 @@ func _process(_delta):
 	frame += 1
 	checkDeath()
 	if can_spread:
-		update()
+		# update()
 
 		op = checkBoundary(points, op, gap)
 		points.append_array(op)
@@ -77,7 +77,7 @@ func _process(_delta):
 
 		if points.size() > POINT_LIMIT:
 			# print("limit reached; point removed" + str(points[0]))
-			removePoint(points[0])
+			removePoint(points[0], world.temp_invalid_removal_countdown_npc)
 		
 		for p in points:
 			# if (points.has(Vector2(p.x + gap, p.y + gap)) and
@@ -103,10 +103,10 @@ func _process(_delta):
 					# get all areas intersecting with the current point on collision layer 2
 					# (doesn't seem to care about the collision layer, so be careful)
 					if d["collider"] == player.fla:
-						removePoint(p)
+						removePoint(p, world.temp_invalid_removal_countdown_player)
 				if d["collider"].is_in_group("light_bullets"):
 					for pp in d["collider"].pattern:
-						removePoint(p+pp)
+						removePoint(p+pp, world.temp_invalid_removal_countdown_npc)
 						# print(pp)
 						
 		centre_point /= Vector2(points.size(), points.size()) # get the average position of all points
@@ -115,7 +115,7 @@ func _process(_delta):
 						
 		if checkInside(target, points):
 			# print(inners.has(Vector2(stepify(target.x, gap), stepify(target.y, gap))))
-			print("DIED " + str(Vector2(stepify(target.x, gap), stepify(target.y, gap))) + " " + str(rng.randi()))
+			# print("DIED " + str(Vector2(stepify(target.x, gap), stepify(target.y, gap))) + " " + str(rng.randi()))
 			grid_interval = 10000
 			# can_spread = false
 		else: 
@@ -205,7 +205,7 @@ func pathfind(pts: PoolVector2Array, tgt: Vector2) -> PoolVector2Array:
 				amnt_y = -gap
 
 		var npv := Vector2(stepify(p.x+amnt_x, gap), stepify(p.y+amnt_y, gap))
-		if !pts.has(npv) and !world.temp_invalids.has(npv):
+		if !pts.has(npv) and !world.temp_invalids.has(npv) and !world.illegal.has(npv):
 			pts.append(npv)
 
 	return pts
@@ -440,7 +440,7 @@ func placeTile(v: Vector2, tn: int):
 		return true
 	return false
 
-func removePoint(v: Vector2):
+func removePoint(v: Vector2, t: float):
 	var i := points.find(v)
 	if i >= 0: 
 		points.remove(i)
@@ -450,7 +450,7 @@ func removePoint(v: Vector2):
 			-1
 		)
 		# start a frame timer for the removed point so it can't be spread to until the timer finishes
-		world.temp_invalids[v] = world.temp_invalid_removal_countdown 
+		world.temp_invalids[v] = t
 
 func checkDeath():
 	if points.size() == 0:

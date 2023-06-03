@@ -70,8 +70,7 @@ func _process(_delta):
 				player.npc_item = false
 				player.player_npc_cancelled = true
 			close_inventory()
-		
-		if Input.get_action_strength("ui_accept") != 0:
+		elif Input.get_action_strength("ui_accept") != 0:
 			# if held_item and held_item.has_item:
 			# picking up item
 			if player.is_picking:

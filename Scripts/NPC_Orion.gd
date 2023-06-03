@@ -17,5 +17,7 @@ func _ready():
 	pattern.append(Vector2(world.gap, world.gap))
 	pattern.append(Vector2(-world.gap, -world.gap))
 
+	intbox.name = name
+
 func _process(_delta):
 	updateHealth(-1)

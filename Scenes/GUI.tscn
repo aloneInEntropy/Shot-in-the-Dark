@@ -17,7 +17,6 @@ visible = false
 visible = false
 
 [node name="Welcome" parent="." instance=ExtResource( 4 )]
-visible = false
 
 [node name="Label1" type="Label" parent="."]
 margin_right = 40.0

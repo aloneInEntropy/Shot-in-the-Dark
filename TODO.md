@@ -6,14 +6,14 @@
 - [x] Redraw infection sprite
 - [x] Add sound effects
 - [x] Redo floor plan, including adding a first floor and basement
-- [ ] Implement hall area
+- [x] Implement hall area
 - [ ] Implement new floor plan
 - [ ] Re-redrawing infection sprite to allow for autotiling
 - [x] Add shooting "light bullets"
-- [ ] Add light barriers (light cannot go past barriers)
+- [x] Add light barriers (light cannot go past barriers)
 - [ ] Change player flashlight to use raycasts instead of an area
 - [x] Re-implement NPC scenes using inheritance
-- [ ] Dummy/invalid points: points not allowed to be spread to
+- [x] Dummy/invalid points: points not allowed to be spread to
 - [ ] Better pathfinding (BFS, A*, etc.) while keeping randomness
 
 ##### Current issues:

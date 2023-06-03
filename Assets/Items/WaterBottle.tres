@@ -5,5 +5,5 @@
 
 [resource]
 script = ExtResource( 1 )
-name = "Water"
+name = "WaterBottle"
 texture = ExtResource( 2 )

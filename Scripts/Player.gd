@@ -13,16 +13,21 @@ onready var at = $AnimationTree # animation tree
 onready var spr = $Sprite # player sprite
 onready var fl = $Flashlight # player flashlight
 onready var intbox = $InteractBox # interaction box
+onready var floorbox = $FloorBox # floor detection box
 onready var pickup_audio = $PickupAudio # pickup audio
 onready var fl_audio = $FlashlightAudio # flashlight click audio
 onready var fla = fl.get_node("FlashlightArea") # flashlight area
 onready var flac = fla.get_node("FlashlightCollider") # flashlight collider
 onready var world = get_tree().get_root().get_node("World") # world
+onready var cam_pointer := $CameraPointer
 onready var gui = world.get_node("GUI") # gui
 onready var player_ui = gui.get_node("FlashlightRemaining")
 onready var ast = at.get("parameters/playback") # animation state
 onready var item_names = world.item_names
 onready var npc_names = world.npc_names
+
+# the floor the player is on
+var floor_num := 1
 
 var flashlight_battery_remaining = 100 # flashlight battery remaining
 var flashlight_battery_loss = 0.5 # the amount to decrease the flashlight battery by
@@ -52,6 +57,7 @@ func _ready():
 
 func _process(_delta):
 	# print("player: " + str(global_position))
+	
 	pass
 
 func _physics_process(delta):
@@ -119,14 +125,10 @@ func _physics_process(delta):
 					# add to battery
 					flashlight_battery_remaining = min(100, flashlight_battery_remaining + added_battery_amount)
 					gui.get_node("FlashlightRemaining").set_battery(flashlight_battery_remaining)
-					# print("up: " + str(flashlight_battery_remaining))
-					world.spawn_positions_used.erase(item_overlapping.position)
 					item_overlapping.takeItem()
-					# item_overlapping.queue_free()
-					# item_overlapping = null
 					world.item_spawn_timer = world.item_spawn_max_timer
 				else:
-					# world.spawn_positions_used.erase(item_overlapping.position)
+					# deal with item
 					player_item_selected = item_overlapping
 					is_picking = true
 					world.inventory.held_item = player_item_selected
@@ -137,11 +139,7 @@ func _physics_process(delta):
 	if at_generator:
 		if Input.get_action_strength("ui_pick_up") != 0:
 			world.inventory.open_inventory()
-		# world.inventory.held_item = player_item_selected
 
-	# else:
-	# 	gui.get_node("Label").text = ""
-	
 	if can_npc_interact:
 		if Input.get_action_strength("ui_pick_up") != 0:
 			at_generator = false
@@ -167,6 +165,21 @@ func _draw():
 	# draw_circle(flac.polygon[1].rotated(get_angle_to((prev_angle))), 5, Color8(255, 0, 0))
 	# draw_circle(flac.polygon[2].rotated(get_angle_to((prev_angle))), 5, Color8(255, 0, 0))
 	pass
+
+
+# check the floor the player is on
+func check_floor():
+	var res = get_world_2d().get_direct_space_state().intersect_point(position, 32, [], 2, true, true)
+	for d in res:
+		if d["collider"] == world.floor_hall:
+			# print("going to hall")
+			world.set_floor(world.FLOOR_NUM_HALL)
+			return
+		elif d["collider"] == world.floor_ground:
+			# print("going to ground")
+			world.set_floor(world.FLOOR_NUM_GROUND)
+			return
+
 
 func _on_Hurtbox_area_entered(area:Area2D):
 	if "Infection" in area.name:
